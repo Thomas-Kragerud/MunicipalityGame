@@ -1,7 +1,6 @@
 import geopandas as gpd
 import folium
-from config import PROJECT_ROOT
-import sys
+from src.backend.config import PROJECT_ROOT
 import os
 #sys.path.append(os.getcwd().split('old_projects')[0])
 map_path = os.path.join(PROJECT_ROOT, 'old_projects/data/fylker-og-kommuner-2020-master/Kommuner-small.json')
