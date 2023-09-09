@@ -11,10 +11,12 @@ def create_app():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     # Construct the full path to the templates directory
     template_path = os.path.join(dir_path, '..', '..', 'frontend', 'templates')
+    static_path = os.path.join(dir_path, '..', '..', 'frontend', 'static')
 
-    app = Flask(__name__, template_folder=template_path)
+    app = Flask(__name__, template_folder=template_path, static_folder=static_path)
 
     from .views import main
-    app.register_blueprint(main.bp)
+    app.register_blueprint(main.bp) # register the Blueprint
+    # this attaches the routs defined in the blueprint to the flask app instance
 
     return app

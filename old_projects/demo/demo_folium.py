@@ -3,8 +3,8 @@ import folium
 from src.backend.config import PROJECT_ROOT
 import os
 #sys.path.append(os.getcwd().split('old_projects')[0])
-map_path = os.path.join(PROJECT_ROOT, 'old_projects/data/fylker-og-kommuner-2020-master/Kommuner-small.json')
-
+#map_path = os.path.join(PROJECT_ROOT, 'old_projects/data/fylker-og-kommuner-2020-master/Kommuner-small.json')
+map_path = '/Users/thomas/PycharmProjects/MunicipalityGame/old_projects/data/fylker-og-kommuner-2020-master/Kommuner-small.json'
 gdf = gpd.read_file(map_path)
 
 # Initial map centered around Norway
@@ -22,4 +22,5 @@ for _, r in gdf.iterrows():
     geojson.add_child(popup).add_to(m)
 
 # Create map
-m.save(os.path.join(PROJECT_ROOT, 'old_projects/html/map.html'))
+#m.save(os.path.join(PROJECT_ROOT, 'old_projects/html/map.html'))
+m.save('map.html')
