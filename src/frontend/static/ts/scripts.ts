@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     });
 
-    const map = L.map('map-id', { layers: [osmLayer] }).setView([60.4720, 8.4689], 7);
+    const map = L.map('map-id', { layers: [osmLayer] }).setView([63.8305, 8.4689], 5);
 
     // Use an event listener to adjust the map size after it's loaded
     map.whenReady(() => {
@@ -35,4 +35,3 @@ document.addEventListener('DOMContentLoaded', () => {
             }).addTo(map);
         });
 });
-
