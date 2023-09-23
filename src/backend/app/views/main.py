@@ -30,5 +30,5 @@ def get_random_municipality():
         data = json.load(f)
     random_municipality = choice(data['features'])
     name = random_municipality['properties']['navn']
-    icon_path = f'kjøh'
+    icon_path = f'kjoh'
     return jsonify(name=name, icon_url=icon_path)

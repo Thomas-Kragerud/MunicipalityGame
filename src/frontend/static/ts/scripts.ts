@@ -1,37 +1,102 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // const map = L.map('map').setView([60.4720, 8.4689], 5);
-    //
-    // // Displaying the map
-    // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-    const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    });
+// Set up basic map properties
+class NorwayMap {
+    private map!: L.Map;
 
-    const map = L.map('map-id', { layers: [osmLayer] }).setView([63.8305, 8.4689], 5);
+    constructor() {
+        this.initializeMap();
+    }
 
-    // Use an event listener to adjust the map size after it's loaded
-    map.whenReady(() => {
-        map.invalidateSize();
-    });
+    private initializeMap() {
+        const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        });
 
-    // Overlaying the GeoJSON data
-    fetch('/geojson')
-        .then(response => response.json())
-        .then(data => {
-            const geojsonLayer = L.geoJSON(data, {
-                style: {
-                    color: '#000', // Black color for the boundary
-                    weight: 2,     // Width of the boundary
-                    fillOpacity: 0.2 // Transparency of the municipality fill
-                },
-                onEachFeature: (feature, layer) => {
-                    if (feature.properties && feature.properties.navn) {
-                        layer.on('click', (e) => {
-                            const infoBox = document.getElementById('info-box') as HTMLElement;
-                            infoBox.innerHTML = `Du trykket på ${feature.properties.navn}`;
+        this.map = L.map('map-id', {layers: [osmLayer]}).setView([63.8305, 8.4689], 5);
+        this.map.whenReady(() => {
+            this.map.invalidateSize();
+        });
+    }
+
+    public addGeoJSONLayer(data: any) {
+        L.geoJSON(data, {
+            style: {
+                color: '#000',
+                weight: 2,
+                fillOpacity: 0.2
+            },
+            onEachFeature: (feature, layer) => {
+                if (feature.properties && feature.properties.navn) {
+                    layer.on('click', (e) => {
+                        const municipalityNameElem = document.getElementById('municipality-name') as HTMLElement;
+                        municipalityNameElem.innerText = `Du trykket på ${feature.properties.navn}`;
+                        // Prevent event propagation
+                        e.originalEvent.stopPropagation();
+                    });
+                }
+            }
+        }).addTo(this.map);
+    }
+
+    public highlightMunicipality(name: string) {
+        logToPage("Highlighted: " + name);
+        this.map.eachLayer((layer) => {
+            if (layer instanceof L.GeoJSON) {
+                layer.eachLayer((featureLayer: any) => {
+                    if (featureLayer.feature && featureLayer.feature.properties && featureLayer.feature.properties.navn === name) {
+                        if (typeof featureLayer.setStyle === 'function') {
+                            featureLayer.setStyle({
+                                fillColor: 'red',
+                                fillOpacity: 0.7
+                            });
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    public resetHighlights() {
+        this.map.eachLayer((layer) => {
+            if (layer instanceof L.GeoJSON) {
+                layer.eachLayer((featureLayer: any) => {
+                    if (typeof featureLayer.setStyle === 'function') {
+                        featureLayer.setStyle({
+                            fillColor: '#000',
+                            fillOpacity: 0.2
                         });
                     }
-                }
-            }).addTo(map);
+                });
+            }
         });
+    }
+}
+
+function logToPage(message: string) {
+    const logElement = document.getElementById('debug-log');
+    if (logElement) {
+        logElement.innerHTML += `<div>${message}</div>`;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const norwayMap = new NorwayMap();
+
+    fetch('/geojson')
+        .then(response => response.json())
+        .then(data => norwayMap.addGeoJSONLayer(data));
+
+    const startGameButton = document.getElementById('start-game-btn');
+    startGameButton?.addEventListener('click', () => {
+        logToPage("Start Game button clicked!");
+        norwayMap.resetHighlights();
+
+        fetch('/get-random-municipality')
+            .then(response => response.json())
+            .then(data => {
+                norwayMap.highlightMunicipality(data.name);
+                const iconElem = document.getElementById('municipality-icon') as HTMLImageElement;
+                iconElem.src = data.icon_url;
+                iconElem.style.display = 'block';
+            });
+    });
 });
