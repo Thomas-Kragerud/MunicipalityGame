@@ -71,6 +71,141 @@ function logToPage(message) {
         logElement.innerHTML += "<div>".concat(message, "</div>");
     }
 }
+var searchInput = document.getElementById('municipality-search');
+var autocompleteResults = document.getElementById('autocomplete-results');
+var activeItemIndex = -1;
+searchInput.addEventListener('keydown', function (e) {
+    var items = Array.from(autocompleteResults.children);
+    if (e.key === "ArrowDown") {
+        if (activeItemIndex < items.length - 1) {
+            activeItemIndex++;
+        }
+    }
+    else if (e.key === "ArrowUp") {
+        if (activeItemIndex > 0) {
+            activeItemIndex--;
+        }
+    }
+    else if (e.key === "Enter") {
+        if (activeItemIndex > -1 && activeItemIndex < items.length) {
+            searchInput.value = items[activeItemIndex].innerHTML;
+            autocompleteResults.innerHTML = '';
+            e.preventDefault(); // Prevent form submission or other default behaviors
+        }
+    }
+    // Highlight the active item
+    items.forEach(function (item, index) {
+        if (index === activeItemIndex) {
+            item.classList.add('active');
+        }
+        else {
+            item.classList.remove('active');
+        }
+    });
+});
+searchInput.addEventListener('input', function () {
+    var query = this.value;
+    activeItemIndex = -1;
+    if (!query) {
+        autocompleteResults.innerHTML = '';
+        return;
+    }
+    // Fetch possible matches from the backend
+    fetch("/search-municipalities?q=".concat(query))
+        .then(function (response) { return response.json(); })
+        .then(function (data) {
+        autocompleteResults.innerHTML = '';
+        data.names.forEach(function (name) {
+            var item = document.createElement('div');
+            item.innerHTML = name;
+            item.addEventListener('click', function () {
+                searchInput.value = this.innerHTML;
+                autocompleteResults.innerHTML = '';
+            });
+            autocompleteResults.appendChild(item);
+        });
+    });
+});
+// Close the dropdown if the user clicks outside of it
+document.addEventListener('click', function (event) {
+    if (event.target !== searchInput) {
+        autocompleteResults.innerHTML = '';
+    }
+});
+var submitButton = document.getElementById('submit-guess');
+submitButton === null || submitButton === void 0 ? void 0 : submitButton.addEventListener('click', function () {
+    var guess = document.getElementById('municipality-search').value;
+    checkGuess(guess);
+});
+function checkGuess(guess) {
+    fetch('/check-guess', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ guess: guess })
+    })
+        .then(function (response) { return response.json(); })
+        .then(function (data) {
+        if (data.result === 'correct') {
+            displayCelebration();
+        }
+        else {
+            incrementAttempts();
+        }
+    });
+}
+function displayCelebration() {
+    // Displaying confetti
+    particlesJS('map-id', {
+        "particles": {
+            "number": {
+                "value": 400,
+                "density": {
+                    "enable": true,
+                    "value_area": 800
+                }
+            },
+            "color": {
+                "value": "#ff0000"
+            },
+            "opacity": {
+                "value": 0.7
+            },
+            "size": {
+                "value": 10
+            },
+            "line_linked": {
+                "enable": false
+            },
+            "move": {
+                "direction": "top",
+                "speed": 1.5
+            }
+        },
+        "interactivity": {
+            "events": {
+                "onclick": {
+                    "enable": true,
+                    "mode": "remove"
+                }
+            },
+            "modes": {
+                "remove": {
+                    "particles_nb": 10
+                }
+            }
+        }
+    });
+    // Maybe display a modal or an alert saying "Hurray! You're right!"
+    alert("Hurray! You're right!");
+}
+function incrementAttempts() {
+    var counter = document.getElementById('attempt-counter');
+    var currentAttempts = parseInt(counter.innerText, 10);
+    counter.innerText = (currentAttempts + 1).toString();
+    alert('Try again!');
+}
 document.addEventListener('DOMContentLoaded', function () {
     var norwayMap = new NorwayMap();
     fetch('/geojson')
