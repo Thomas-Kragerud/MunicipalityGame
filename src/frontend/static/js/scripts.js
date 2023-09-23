@@ -13,12 +13,12 @@ var NorwayMap = /** @class */ (function () {
             _this.map.invalidateSize();
         });
     };
-    NorwayMap.prototype.addGeoJSONLayer = function (data) {
+    NorwayMap.prototype.addGeoJSONLayer = function (data, color, fillOpacity, weight) {
         L.geoJSON(data, {
             style: {
-                color: '#000',
-                weight: 2,
-                fillOpacity: 0.2
+                color: color,
+                weight: weight,
+                fillOpacity: fillOpacity
             },
             onEachFeature: function (feature, layer) {
                 if (feature.properties && feature.properties.navn) {
@@ -32,16 +32,21 @@ var NorwayMap = /** @class */ (function () {
             }
         }).addTo(this.map);
     };
-    NorwayMap.prototype.highlightMunicipality = function (name) {
-        logToPage("Highlighted: " + name);
+    NorwayMap.prototype.highlightMunicipality = function (municipalityName, countyName) {
+        this.highlightFeature(municipalityName);
+        this.highlightFeature(countyName, 'blue', 0.5);
+    };
+    NorwayMap.prototype.highlightFeature = function (name, color, fillOpacity) {
+        if (color === void 0) { color = 'red'; }
+        if (fillOpacity === void 0) { fillOpacity = 0.7; }
         this.map.eachLayer(function (layer) {
             if (layer instanceof L.GeoJSON) {
                 layer.eachLayer(function (featureLayer) {
                     if (featureLayer.feature && featureLayer.feature.properties && featureLayer.feature.properties.navn === name) {
                         if (typeof featureLayer.setStyle === 'function') {
                             featureLayer.setStyle({
-                                fillColor: 'red',
-                                fillOpacity: 0.7
+                                fillColor: color,
+                                fillOpacity: fillOpacity
                             });
                         }
                     }
@@ -210,7 +215,11 @@ document.addEventListener('DOMContentLoaded', function () {
     var norwayMap = new NorwayMap();
     fetch('/geojson')
         .then(function (response) { return response.json(); })
-        .then(function (data) { return norwayMap.addGeoJSONLayer(data); });
+        //.then(data => norwayMap.addGeoJSONLayer(data.kommuner));
+        .then(function (data) {
+        norwayMap.addGeoJSONLayer(data.fylker, '#ADD8E6', 0.01, 1);
+        norwayMap.addGeoJSONLayer(data.kommuner, '#000', 0.2, 2);
+    });
     var startGameButton = document.getElementById('start-game-btn');
     startGameButton === null || startGameButton === void 0 ? void 0 : startGameButton.addEventListener('click', function () {
         logToPage("Start Game button clicked!");
@@ -218,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch('/get-random-municipality')
             .then(function (response) { return response.json(); })
             .then(function (data) {
-            norwayMap.highlightMunicipality(data.name);
+            norwayMap.highlightMunicipality(data.name, data.fylke);
             var iconElem = document.getElementById('municipality-icon');
             iconElem.src = data.icon_url;
             iconElem.style.display = 'block';

@@ -17,12 +17,12 @@ class NorwayMap {
         });
     }
 
-    public addGeoJSONLayer(data: any) {
+    public addGeoJSONLayer(data: any, color: string, fillOpacity: number, weight: number) {
         L.geoJSON(data, {
             style: {
-                color: '#000',
-                weight: 2,
-                fillOpacity: 0.2
+                color: color,
+                weight: weight,
+                fillOpacity: fillOpacity
             },
             onEachFeature: (feature, layer) => {
                 if (feature.properties && feature.properties.navn) {
@@ -36,17 +36,20 @@ class NorwayMap {
             }
         }).addTo(this.map);
     }
+    public highlightMunicipality(municipalityName: string, countyName: string) {
+        this.highlightFeature(municipalityName);
+        this.highlightFeature(countyName, 'blue', 0.5);
+    }
 
-    public highlightMunicipality(name: string) {
-        logToPage("Highlighted: " + name);
+    private highlightFeature(name: string, color : string = 'red', fillOpacity: number = 0.7) {
         this.map.eachLayer((layer) => {
             if (layer instanceof L.GeoJSON) {
                 layer.eachLayer((featureLayer: any) => {
                     if (featureLayer.feature && featureLayer.feature.properties && featureLayer.feature.properties.navn === name) {
                         if (typeof featureLayer.setStyle === 'function') {
                             featureLayer.setStyle({
-                                fillColor: 'red',
-                                fillOpacity: 0.7
+                                fillColor: color,
+                                fillOpacity: fillOpacity
                             });
                         }
                     }
@@ -228,7 +231,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     fetch('/geojson')
         .then(response => response.json())
-        .then(data => norwayMap.addGeoJSONLayer(data));
+        //.then(data => norwayMap.addGeoJSONLayer(data.kommuner));
+        .then(data => {
+            norwayMap.addGeoJSONLayer(data.fylker, '#ADD8E6', 0.01, 1);
+            norwayMap.addGeoJSONLayer(data.kommuner, '#000', 0.2, 2);
+        });
 
     const startGameButton = document.getElementById('start-game-btn');
     startGameButton?.addEventListener('click', () => {
@@ -238,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch('/get-random-municipality')
             .then(response => response.json())
             .then(data => {
-                norwayMap.highlightMunicipality(data.name);
+                norwayMap.highlightMunicipality(data.name, data.fylke);
                 const iconElem = document.getElementById('municipality-icon') as HTMLImageElement;
                 iconElem.src = data.icon_url;
                 iconElem.style.display = 'block';
