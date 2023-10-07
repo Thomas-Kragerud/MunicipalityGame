@@ -4,7 +4,8 @@
     "module": "commonjs",
     "outDir": "./static/js/",
     "strict": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "lib": ["es6", "dom"]
   },
   "include": [
     "./static/ts/**/*.ts"

@@ -2,11 +2,32 @@
 <html>
 <head>
     <title>Norway Municipalities Game</title>
+    <link rel="stylesheet" href="../static/css/style.css"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script> <!-- confetti -->
     <script src="../static/js/scripts.js" defer></script>
 </head>
 <body>
-    <div id="map" style="height: 600px;"></div>
+    <div id="info-box" class="info-box">
+        <button id="start-game-btn">Start Game</button>
+        <div class="info-title">Municipality Info</div>
+        <img id="municipality-icon" src="" alt="Municipality Icon" style="display: none;">
+        <p id="municipality-name"></p> <!-- This will show the name of the clicked municipality -->
+        <p>Attempts: <span id="attempt-counter">0</span></p>
+        <div class="autocomplete">
+        <input type="text" id="municipality-search" placeholder="Search for a municipality...">
+        <div id="autocomplete-results" class="autocomplete-items"></div>
+        <button id="submit-guess">Submit</button>
+        </div>
+
+
+    </div>
+    <div class="container">
+        <div id="map-id"></div>
+    </div>
+
+    <!-- For Debugging -->
+    <div id="debug-log" style="height: 200px; overflow: auto; border: 1px solid black;"></div>
 </body>
 </html>
