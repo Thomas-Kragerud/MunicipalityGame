@@ -45,8 +45,9 @@ def get_random_municipality():
     # number = str(random_municipality['properties']['kommunenummer'])
 
     name = get_random_municipality_from_county_once("Møre og Romsdal")
+    if name == 'Empty':
+        return jsonify(error="all municipalities in this county have been used"), 404
     number = str(df_kommuner[df_kommuner['Name']== name]['Number[1] (ISO 3166-2:NO)'].values[0])
-    print(name)
 
 
     global random_municipality_name
@@ -111,10 +112,11 @@ def get_random_municipality_from_county_once(county_name):
     # Filter dataframe for the specified county and then filter out served municipalities
     county_df = df_kommuner[df_kommuner['County'] == county_name]
     available_municipalities = county_df[~county_df['Name'].isin(served_municipalities)]
+    print(served_municipalities)
 
     if available_municipalities.empty:
         session.pop('served_municipalities', None)  # Resetting the session variable
-        return "Du har sett alle kommunene! Start på nytt!"
+        return "Empty"
 
     # Sample a random municipality
     random_municipality = available_municipalities.sample(n=1).iloc[0]
