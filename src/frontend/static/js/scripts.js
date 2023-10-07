@@ -234,3 +234,16 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+// Press start game by clicking "G" key
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'g' || e.key === 'G') {
+        var startGameButton = document.getElementById('start-game-btn');
+        startGameButton === null || startGameButton === void 0 ? void 0 : startGameButton.click();
+    }
+});
+document.addEventListener('keydown', function (e) {
+    if (e.key === 's' || e.key === 'S') {
+        var submitButton_1 = document.getElementById('submit-guess');
+        submitButton_1 === null || submitButton_1 === void 0 ? void 0 : submitButton_1.click();
+    }
+});

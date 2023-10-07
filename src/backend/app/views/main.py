@@ -42,7 +42,7 @@ def get_random_municipality():
     random_municipality = choice(data['features'])
     #name = random_municipality['properties']['navn']
     # number = str(random_municipality['properties']['kommunenummer'])
-    name = get_random_municipality_from_county("Trøndelag")
+    name = get_random_municipality_from_county("Vestland")
     number = str(df_kommuner[df_kommuner['Name']== name]['Number[1] (ISO 3166-2:NO)'].values[0])
     print(name)
 
