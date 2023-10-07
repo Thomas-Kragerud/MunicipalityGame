@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, render_template, request, url_for
+from flask import Blueprint, jsonify, render_template, request, url_for, session
 import random
 import geopandas as gpd
 import json
@@ -6,6 +6,7 @@ from random import choice
 import os
 import glob
 import pandas as pd
+
 
 df_kommuner = pd.read_csv('src/frontend/static/data/kommuner.csv')
 
@@ -39,10 +40,11 @@ def get_random_municipality():
     with open('src/frontend/static/data/Kommuner-large.json') as f:
         data = json.load(f)
 
-    random_municipality = choice(data['features'])
+    #random_municipality = choice(data['features'])
     #name = random_municipality['properties']['navn']
     # number = str(random_municipality['properties']['kommunenummer'])
-    name = get_random_municipality_from_county("Vestland")
+
+    name = get_random_municipality_from_county_once("Møre og Romsdal")
     number = str(df_kommuner[df_kommuner['Name']== name]['Number[1] (ISO 3166-2:NO)'].values[0])
     print(name)
 
@@ -100,3 +102,25 @@ def get_random_municipality_from_county(county_name):
     random_municipality = county_df.sample(n=1).iloc[0]
 
     return random_municipality['Name']  # Assuming the column name for municipality is 'MunicipalityName'
+
+
+def get_random_municipality_from_county_once(county_name):
+    # Get the list of municipalities that have already been served to the user
+    served_municipalities = session.get('served_municipalities', [])
+
+    # Filter dataframe for the specified county and then filter out served municipalities
+    county_df = df_kommuner[df_kommuner['County'] == county_name]
+    available_municipalities = county_df[~county_df['Name'].isin(served_municipalities)]
+
+    if available_municipalities.empty:
+        session.pop('served_municipalities', None)  # Resetting the session variable
+        return "Du har sett alle kommunene! Start på nytt!"
+
+    # Sample a random municipality
+    random_municipality = available_municipalities.sample(n=1).iloc[0]
+
+    # Add the served municipality to the session
+    served_municipalities.append(random_municipality['Name'])
+    session['served_municipalities'] = served_municipalities
+
+    return random_municipality['Name']

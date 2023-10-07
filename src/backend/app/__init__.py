@@ -14,6 +14,7 @@ def create_app():
     static_path = os.path.join(dir_path, '..', '..', 'frontend', 'static')
 
     app = Flask(__name__, template_folder=template_path, static_folder=static_path)
+    app.secret_key = 'thom_key_69'
 
     from .views import main
     app.register_blueprint(main.bp) # register the Blueprint
